@@ -1,5 +1,5 @@
-/*.wav
-/.vscode
-/__pycache__
-/wav/
+*.wav
+.vscode/
+__pycache__/
+wav/
 /.gitignore
