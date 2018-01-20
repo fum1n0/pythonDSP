@@ -124,3 +124,17 @@ def writeWave(signal, sf, name="write"):
     save_wav.setframerate(sf)
     save_wav.writeframes(signal)
     save_wav.close()
+
+def calcPitchFreq(r_error, fs):
+    return fs / (np.argmax(r_error[1:]) + 1)
+
+def createPulse(freq, fs, len):
+
+    pulse = np.zeros(len)
+    num = 0
+    while num < len:
+        pulse[int(num)] = 1.0
+        num += fs/freq
+
+    return pulse
+
