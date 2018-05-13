@@ -12,7 +12,7 @@ from mutagen.mp4 import MP4
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--data_dir', dest='data_dir',
-                    default='.', help='path of the wav data')
+                    default='.', help='path of the music data')
 args = parser.parse_args()
 
 if __name__ == '__main__':
