@@ -5,6 +5,7 @@ from glob import glob
 import numpy as np
 import subprocess
 import argparse
+import shutil
 
 from mutagen.flac import FLAC
 from mutagen.flac import Picture as fimg
@@ -34,26 +35,20 @@ if __name__ == '__main__':
         os.mkdir(tag_dir)
 
     if args.move_tag:  # move tag file to tag dir
-        from_path = '{}/*.{}'.format(args.data_dir, args.tag_ex)
-        to_path = '{}/'.format(tag_dir)
-        cli_args = ['mv', from_path, to_path]
-        try:
-            subprocess.check_output(cli_args)
-        except:
-            print("not move " + args.tag_ex + " file")
+        from_paths = glob('{}/*.{}'.format(args.data_dir, args.tag_ex))
+        for from_path in from_paths:
+            shutil.move(from_path, '{}/{}/{}'.format(args.data_dir,
+                                                     args.tag_ex, os.path.basename(from_path)))
 
     # wav dir path check
     if not os.path.exists(wav_dir):
         os.mkdir(wav_dir)
 
     if args.move_wav:  # move wav file to wav dir
-        from_path = '{}/*.wav'.format(args.data_dir)
-        to_path = '{}/'.format(wav_dir)
-        cli_args = ['mv', from_path, to_path]
-        try:
-            subprocess.check_output(cli_args)
-        except:
-            print('not move wav file')
+        from_paths = glob('{}/*.wav'.format(args.data_dir))
+        for from_path in from_paths:
+            shutil.move(from_path, '{}/wav/{}'.format(args.data_dir,
+                                                      os.path.basename(from_path)))
 
     # flac dir check
     if not os.path.exists(flac_dir):
