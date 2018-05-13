@@ -15,8 +15,10 @@ parser.add_argument('--data_dir', dest='data_dir',
                     default='.', help='path of the music data')
 parser.add_argument('--tag_ex', dest='tag_ex',
                     default='m4a', help='ectension of the tag file')
-parser.add_argument('--move', dest='move', type=bool, 
-                    default='False', help='file move dir')
+parser.add_argument('--move_tag', dest='move_tag', type=bool,
+                    default='False', help=' move tag file to tag dir')
+parser.add_argument('--move_wav', dest='move_wav', type=bool,
+                    default='False', help=' move wav file to tag dir')
 
 args = parser.parse_args()
 
@@ -31,7 +33,7 @@ if __name__ == '__main__':
     if not os.path.exists(tag_dir):
         os.mkdir(tag_dir)
 
-    if args.move:  # move tag file to tag dir
+    if args.move_tag:  # move tag file to tag dir
         from_path = '{}/*.{}'.format(args.data_dir, args.tag_ex)
         to_path = '{}/'.format(tag_dir)
         cli_args = ['mv', from_path, to_path]
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     if not os.path.exists(wav_dir):
         os.mkdir(wav_dir)
 
-    if args.move:  # move wav file to wav dir
+    if args.move_wav:  # move wav file to wav dir
         from_path = '{}/*.wav'.format(args.data_dir)
         to_path = '{}/'.format(wav_dir)
         cli_args = ['mv', from_path, to_path]
