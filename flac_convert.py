@@ -17,6 +17,8 @@ parser.add_argument('--tag_ex', dest='tag_ex',
                     default='m4a', help='ectension of the tag file')
 parser.add_argument('--mv', dest='mv',
                     type=bool, default=False, help='is file move')
+parser.add_argument('--rm', dest='rm',
+                    type=bool, default=False, help='is wav and tag dir remove ')
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -76,15 +78,15 @@ if __name__ == '__main__':
     print(tag_path)
     print(flac_path)
 
-    # output cover image
-    cli_args = ['ffmpeg', '-i', tag_path[0], 'cover.jpg']
-    try:
-        subprocess.check_output(cli_args)
-    except:
-        print("not output cover")
-
     # convert
     for i in range(len(wav_path)):
+
+        # output cover image
+        cli_args = ['ffmpeg', '-i', tag_path[i], 'cover.jpg']
+        try:
+            subprocess.check_output(cli_args)
+        except:
+            print("not output cover")
 
         # convert wav file to flac
         cli_args = ['ffmpeg', '-i', wav_path[i], '-ac',
@@ -109,17 +111,19 @@ if __name__ == '__main__':
         # write tag info
         audio_flac = FLAC(flac_path[i])
         audio_flac.clear()
+        audio_flac.clear_pictures()
         for key in key_list:
             audio_flac[key] = tag_info[key]
 
         # write cover image info
-        img = fimg()
-        img.type = 3
-        img.mime = 'image/jpg'
-        img.desc = 'front cover'
-        img.colors = 0
-        img.data = open('cover.jpg', mode='rb').read()
-        audio_flac.add_picture(img)
+        if os.path.exists('./cover.jpg'):
+            img = fimg()
+            img.type = 3
+            img.mime = 'image/jpg'
+            img.desc = 'front cover'
+            img.colors = 0
+            img.data = open('cover.jpg', mode='rb').read()
+            audio_flac.add_picture(img)
 
         # save music info
         audio_flac.save()
@@ -131,15 +135,16 @@ if __name__ == '__main__':
         except:
             print("remove tag flac error")
 
-    # remove cover image
-    cli_args = ['rm', './cover.jpg']
-    try:
-        subprocess.check_output(cli_args)
-    except:
-        print("remove cover image error")
+        # remove cover image
+        if os.path.exists('./cover.jpg'):
+            cli_args = ['rm', './cover.jpg']
+            try:
+                subprocess.check_output(cli_args)
+            except:
+                print("remove cover image error")
 
-    # if copy , remove tag dir and wav dir
-    if not args.mv:
+    # if args.rm is True, remove tag dir and wav dir
+    if args.rm:
         shutil.rmtree(tag_dir)
         shutil.rmtree(wav_dir)
 
