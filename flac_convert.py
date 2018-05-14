@@ -9,18 +9,14 @@ import shutil
 
 from mutagen.flac import FLAC
 from mutagen.flac import Picture as fimg
-from mutagen.mp4 import MP4
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--data_dir', dest='data_dir',
                     default='.', help='path of the music data')
 parser.add_argument('--tag_ex', dest='tag_ex',
                     default='m4a', help='ectension of the tag file')
-parser.add_argument('--move_tag', dest='move_tag', type=bool,
-                    default='False', help=' move tag file to tag dir')
-parser.add_argument('--move_wav', dest='move_wav', type=bool,
-                    default='False', help=' move wav file to tag dir')
-
+parser.add_argument('--mv', dest='mv',
+                    type=bool, default=False, help='is file move')
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -34,21 +30,29 @@ if __name__ == '__main__':
     if not os.path.exists(tag_dir):
         os.mkdir(tag_dir)
 
-    if args.move_tag:  # move tag file to tag dir
-        from_paths = glob('{}/*.{}'.format(args.data_dir, args.tag_ex))
-        for from_path in from_paths:
+    # move or copy tag file to tag dir
+    from_paths = glob('{}/*.{}'.format(args.data_dir, args.tag_ex))
+    for from_path in from_paths:
+        if args.mv:  # move tag file
             shutil.move(from_path, '{}/{}/{}'.format(args.data_dir,
                                                      args.tag_ex, os.path.basename(from_path)))
+        else:  # copy tag file
+            shutil.copyfile(from_path, '{}/{}/{}'.format(args.data_dir,
+                                                         args.tag_ex, os.path.basename(from_path)))
 
     # wav dir path check
     if not os.path.exists(wav_dir):
         os.mkdir(wav_dir)
 
-    if args.move_wav:  # move wav file to wav dir
-        from_paths = glob('{}/*.wav'.format(args.data_dir))
-        for from_path in from_paths:
+    # move or copy wav file to wav dir
+    from_paths = glob('{}/*.wav'.format(args.data_dir))
+    for from_path in from_paths:
+        if args.mv:  # move wav file
             shutil.move(from_path, '{}/wav/{}'.format(args.data_dir,
                                                       os.path.basename(from_path)))
+        else:  # copy wav file
+            shutil.copyfile(from_path, '{}/wav/{}'.format(args.data_dir,
+                                                          os.path.basename(from_path)))
 
     # flac dir check
     if not os.path.exists(flac_dir):
@@ -62,11 +66,14 @@ if __name__ == '__main__':
         flac_path.append('{}/'.format(flac_dir) +
                          os.path.basename(path[:-4]) + '.flac')
 
+    # num check
     if len(tag_path) != len(wav_path):
         print('no match num {},wav'.format(args.tag_ex))
         os.sys.exit()
 
+    # print path
     print(wav_path)
+    print(tag_path)
     print(flac_path)
 
     # output cover image
@@ -131,4 +138,10 @@ if __name__ == '__main__':
     except:
         print("remove cover image error")
 
+    # if copy , remove tag dir and wav dir
+    if not args.mv:
+        shutil.rmtree(tag_dir)
+        shutil.rmtree(wav_dir)
+
+    # success call
     print("all convert success")
