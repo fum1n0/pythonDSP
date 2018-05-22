@@ -1,9 +1,10 @@
-#coding:utf-8
+# coding:utf-8
 import wave
 import numpy as np
 import scipy.io.wavfile
 import scipy.signal as sig
 import scipy.fftpack
+
 
 def autocorr(x, nlags=None):
     """自己相関関数を求める
@@ -12,24 +13,27 @@ def autocorr(x, nlags=None):
            引数がなければ（lag=0からlen(x)-1まですべて）
     """
     N = len(x)
-    if nlags == None: nlags = N
+    if nlags == None:
+        nlags = N
     r = np.zeros(nlags)
     for lag in range(nlags):
         for n in range(N - lag):
             r[lag] += x[n] * x[n + lag]
-    
+
     return r
+
 
 def autocorr_fft(x):
     N = len(x)
-    for i in range(0,N):
-        x = np.append(x,0)
+    for i in range(0, N):
+        x = np.append(x, 0)
     sp = np.fft.fft(x)
     sp = abs(sp)
     sp = sp*sp
     r = np.fft.ifft(sp)
 
     return r.real
+
 
 def LevinsonDurbin(r, lpcOrder):
     """Levinson-Durbinのアルゴリズム
@@ -40,7 +44,7 @@ def LevinsonDurbin(r, lpcOrder):
     a = np.zeros(lpcOrder + 1)
     e = np.zeros(lpcOrder + 1)
 
-    if r[0] == 0 :
+    if r[0] == 0:
         return a, e[-1]
 
     # k = 1の場合
@@ -71,7 +75,7 @@ def LevinsonDurbin(r, lpcOrder):
 
         # eを更新
         e[k + 1] = e[k] * (1.0 - lam * lam)
-    
+
     return a, e[-1]
 
 
@@ -83,40 +87,43 @@ def preEmphasis(signal, p):
 
 def errorSignal(signal, a):
     e = np.zeros(len(signal))
-    for i in range(0,len(signal)):
+    for i in range(0, len(signal)):
         tmp = 0.0
         for j in range(0, len(a)):
-            if j<=i :
+            if j <= i:
                 tmp += a[j] * signal[i-j]
         e[i] = tmp
-    
+
     return e
 
 
-def wavread(filename):
+def wavread(filename, stereo=False):
     wf = wave.open(filename, "r")
     fs = wf.getframerate()
     data = wf.readframes(wf.getnframes())
-    if wf.getnchannels()==2:
+    if wf.getnchannels() == 2:
         x = np.frombuffer(data, dtype="int16") / 32768.0  # (-1, 1)に正規化
         left = x[::2]
         right = x[1::2]
         x = (left + right)/2.0
-    else :
+    else:
         x = np.frombuffer(data, dtype="int16") / 32768.0  # (-1, 1)に正規化
     wf.close()
-    return x, float(fs)
+    if not stereo:
+        return x, float(fs)
+    else:
+        return left, right, float(fs)
 
 
 def writeWave(signal, sf, name="write"):
-    
+
     mx = max(max(signal), abs(min(signal)))
-    
+
     if 1.0 < mx:
-         signal *= 32768.0/mx
-    else :
+        signal *= 32768.0/mx
+    else:
         signal *= 32768.0
-    
+
     signal = signal.astype(np.int16)
     save_wav = wave.Wave_write(name+".wav")
     save_wav.setnchannels(1)
@@ -125,8 +132,10 @@ def writeWave(signal, sf, name="write"):
     save_wav.writeframes(signal)
     save_wav.close()
 
+
 def calcPitchFreq(r_error, fs):
     return fs / (np.argmax(r_error[1:]) + 1)
+
 
 def createPulse(freq, fs, len):
 
@@ -137,4 +146,3 @@ def createPulse(freq, fs, len):
         num += fs/freq
 
     return pulse
-
